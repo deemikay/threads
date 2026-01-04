@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Make a Weave</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 18px;
+      padding: 20px;
+      margin: 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+    }
+    input {
+      width: 4ch;
+      margin: 5px;
+      font-size: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .pair {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .bar {
+      font-weight: bold;
+      font-size: 20px;
+      color: #444;
+    }
+    .clear-button {
+      font-size: 18px;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 0 6px;
+    }
+    h2 {
+      font-size: 24px;
+      text-align: center;
+    }
+    .section-label {
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    #results {
+      margin-bottom: 30px;
+    }
+    #results table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-left: 1em;
+    }
+    #results td {
+      padding: 4px 8px;
+      vertical-align: top;
+    }
+    .descriptor {
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h2>Make a Weave</h2>
+
+  <div id="results">
+    <table>
+      <tr>
+        <td>Tension:</td>
+        <td id="tension-value">-</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Weight:</td>
+        <td id="weight-value">-</td>
+        <td class="descriptor" id="weight-desc"></td>
+      </tr>
+      <tr>
+        <td>Sett:</td>
+        <td id="sett-value">-</td>
+        <td class="descriptor" id="sett-desc"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="pairs"></div>
+
+  <script>
+    const pairContainer = document.getElementById('pairs');
+
+    const labels = [
+      { name: "Story / Location / Tone", count: 2 },
+      { name: "Character", count: 3 },
+      { name: "Other", count: 1 }
+    ];
+
+    let pairIndex = 0;
+
+    labels.forEach(section => {
+      const sectionLabel = document.createElement('div');
+      sectionLabel.className = 'section-label';
+      sectionLabel.innerText = section.name;
+      pairContainer.appendChild(sectionLabel);
+
+      for (let i = 0; i < section.count; i++) {
+        const div = document.createElement('div');
+        div.className = 'pair';
+        div.innerHTML = `
+          <input type="number" id="x${pairIndex}"> 
+          <span class="bar">|</span>
+          <input type="number" id="y${pairIndex}">
+          <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
+        pairContainer.appendChild(div);
+        pairIndex++;
+      }
+    });
+
+    function getWeightDescription(value) {
+      if (value >= 42) return "World Changing (+6)";
+      if (value >= 36) return "Near Impossible (+5)";
+      if (value >= 30) return "Ludicrous (+4)";
+      if (value >= 24) return "Very Hard (+3)";
+      if (value >= 18) return "Hard (+2)";
+      if (value >= 12) return "Tricky (+1)";
+      if (value >= 0) return "Business As Usual (0)";
+      return "";
+    }
+
+    function getSettDescription(value) {
+      if (value >= 441) return "Total Collapse";
+      if (value >= 324) return "Catastrophic";
+      if (value >= 225) return "Disastrous";
+      if (value >= 144) return "Going Haywire";
+      if (value >= 81) return "Definitely Breaking";
+      if (value >= 36) return "Unsteady";
+      if (value >= 0) return "Solid As A Rock";
+      return "";
+    }
+
+    function updateResults() {
+      let X = 0, Y = 0;
+      let hasInput = false;
+
+      for (let i = 0; i < 6; i++) {
+        const xVal = document.getElementById(`x${i}`).value;
+        const yVal = document.getElementById(`y${i}`).value;
+
+        const x = parseFloat(xVal);
+        const y = parseFloat(yVal);
+
+        if (!isNaN(x)) {
+          X += x;
+          hasInput = true;
+        }
+        if (!isNaN(y)) {
+          Y += y;
+          hasInput = true;
+        }
+      }
+
+      const weight = hasInput ? X + Y : "-";
+      const tension = hasInput ? X - Y : "-";
+      const sett = hasInput ? X * Y : "-";
+
+      document.getElementById("weight-value").textContent = weight;
+      document.getElementById("tension-value").textContent = tension;
+      document.getElementById("sett-value").textContent = sett;
+
+      document.getElementById("weight-desc").textContent = hasInput ? getWeightDescription(weight) : "";
+      document.getElementById("sett-desc").textContent = hasInput ? getSettDescription(sett) : "";
+    }
+
+    function clearPair(index) {
+      document.getElementById(`x${index}`).value = "";
+      document.getElementById(`y${index}`).value = "";
+      updateResults();
+    }
+
+    document.addEventListener('input', updateResults);
+  </script>
+</body>
+</html>
