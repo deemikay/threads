@@ -95,7 +95,6 @@
       <option value="36">Near Impossible</option>
       <option value="42">World Changing</option>
     </select>
-    <span id="target-diff"></span>
   </div>
 
   <div id="results">
@@ -116,6 +115,7 @@
         <td class="descriptor" id="sett-desc"></td>
       </tr>
     </table>
+    <p id="target-diff" class="descriptor" style="margin-left: 1em;"></p>
   </div>
 
   <div id="pairs"></div>
@@ -211,7 +211,14 @@
         let diff = weight - target;
         if (diff > 8) diff = 8;
         if (diff < -8) diff = -8;
-        targetDiff.textContent = `Difference: ${diff >= 0 ? "+" : ""}${diff}`;
+
+        if (diff === 0) {
+          targetDiff.textContent = "Balanced";
+        } else if (diff < 0) {
+          targetDiff.textContent = `Disadvantage Dice = ${Math.abs(diff)}`;
+        } else {
+          targetDiff.textContent = `Aftermath = ${diff}`;
+        }
       } else {
         targetDiff.textContent = "";
       }
