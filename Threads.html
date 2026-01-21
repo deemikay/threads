@@ -179,8 +179,8 @@
       let hasInput = false;
 
       for (let i = 0; i < 6; i++) {
-        const xVal = document.getElementById(x${i}).value;
-        const yVal = document.getElementById(y${i}).value;
+        const xVal = document.getElementById(`x${i}`).value;
+        const yVal = document.getElementById(`y${i}`).value;
 
         const x = parseFloat(xVal);
         const y = parseFloat(yVal);
@@ -211,15 +211,15 @@
         let diff = weight - target;
         if (diff > 8) diff = 8;
         if (diff < -8) diff = -8;
-        targetDiff.textContent = (Difference: ${diff >= 0 ? "+" : ""}${diff});
+        targetDiff.textContent = `Difference: ${diff >= 0 ? "+" : ""}${diff}`;
       } else {
         targetDiff.textContent = "";
       }
     }
 
     function clearPair(index) {
-      document.getElementById(x${index}).value = "";
-      document.getElementById(y${index}).value = "";
+      document.getElementById(`x${index}`).value = "";
+      document.getElementById(`y${index}`).value = "";
       updateResults();
     }
 
