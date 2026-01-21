@@ -80,8 +80,8 @@
 <body>
   <h2>Threads: Make a Weave</h2>
 
- 
-  <p>Tension (B−D), Weight (B+D), Sett (B×D).</p>
+  <p>Construct a Weave by adding Threads Boosts (B) and Burdens (D).</p>
+  <p>This calculator works out Tension (B−D), Weight (B+D), and Sett (B×D).</p>
 
   <div id="target-container">
     <label for="target-weight"><strong>Target Weight:</strong></label>
@@ -153,8 +153,8 @@
     });
 
     function getWeightDescription(value) {
-      if (value >= 42) return "World Changing achv'd";
-      if (value >= 36) return "Near Impossible achv'd";
+      if (value >= 42) return "World Changing (+11)";
+      if (value >= 36) return "Near Impossible (+9)";
       if (value >= 30) return "Ludicrous";
       if (value >= 24) return "Very Hard";
       if (value >= 18) return "Hard";
