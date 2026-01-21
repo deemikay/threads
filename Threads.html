@@ -72,8 +72,8 @@
     }
     #target-diff {
       margin-left: 1em;
-      font-style: italic;
-      color: #444;
+      font-weight: bold;
+      color: #222;
     }
   </style>
 </head>
@@ -115,7 +115,7 @@
         <td class="descriptor" id="sett-desc"></td>
       </tr>
     </table>
-    <p id="target-diff" class="descriptor" style="margin-left: 1em;"></p>
+    <p id="target-diff"></p>
   </div>
 
   <div id="pairs"></div>
@@ -207,12 +207,16 @@
       document.getElementById("sett-desc").textContent = hasInput ? getSettDescription(sett) : "";
 
       const target = parseInt(targetSelect.value);
+      const targetLabel = targetSelect.options[targetSelect.selectedIndex]?.text;
+
       if (!isNaN(target) && hasInput && typeof weight === "number") {
         let diff = weight - target;
         if (diff > 8) diff = 8;
         if (diff < -8) diff = -8;
 
-        if (diff === 0) {
+        if (targetLabel === "Business As Usual") {
+          targetDiff.textContent = "No Aftermath";
+        } else if (diff === 0) {
           targetDiff.textContent = "Balanced";
         } else if (diff < 0) {
           targetDiff.textContent = `Disadvantage Dice = ${Math.abs(diff)}`;
