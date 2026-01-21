@@ -68,7 +68,7 @@
       color: #555;
     }
     #target-container {
-      margin-bottom: 20px;
+      margin: 20px 0;
     }
     #target-diff {
       margin-left: 1em;
@@ -80,7 +80,6 @@
 <body>
   <h2>Threads: Make a Weave</h2>
 
-  <br><br>
   <p>Construct a Weave by adding Threads Boosts (B) and Burdens (D).</p>
   <p>This calculator works out Tension (B−D), Weight (B+D), and Sett (B×D).</p>
 
@@ -145,4 +144,86 @@
         div.className = 'pair';
         div.innerHTML = `
           <input type="number" id="x${pairIndex}"> 
-          <span class="bar">
+          <span class="bar">|</span>
+          <input type="number" id="y${pairIndex}">
+          <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
+        pairContainer.appendChild(div);
+        pairIndex++;
+      }
+    });
+
+    function getWeightDescription(value) {
+      if (value >= 42) return "World Changing (+11)";
+      if (value >= 36) return "Near Impossible (+9)";
+      if (value >= 30) return "Ludicrous";
+      if (value >= 24) return "Very Hard";
+      if (value >= 18) return "Hard";
+      if (value >= 12) return "Tricky";
+      if (value >= 0) return "Business As Usual";
+      return "";
+    }
+
+    function getSettDescription(value) {
+      if (value >= 441) return "Total Collapse";
+      if (value >= 324) return "Catastrophic";
+      if (value >= 225) return "Disastrous";
+      if (value >= 144) return "Going Haywire";
+      if (value >= 81) return "Definitely Breaking";
+      if (value >= 36) return "Unsteady";
+      if (value >= 0) return "Solid As A Rock";
+      return "";
+    }
+
+    function updateResults() {
+      let X = 0, Y = 0;
+      let hasInput = false;
+
+      for (let i = 0; i < 6; i++) {
+        const xVal = document.getElementById(x${i}).value;
+        const yVal = document.getElementById(y${i}).value;
+
+        const x = parseFloat(xVal);
+        const y = parseFloat(yVal);
+
+        if (!isNaN(x)) {
+          X += x;
+          hasInput = true;
+        }
+        if (!isNaN(y)) {
+          Y += y;
+          hasInput = true;
+        }
+      }
+
+      const weight = hasInput ? X + Y : "-";
+      const tension = hasInput ? X - Y : "-";
+      const sett = hasInput ? X * Y : "-";
+
+      document.getElementById("weight-value").textContent = weight;
+      document.getElementById("tension-value").textContent = tension;
+      document.getElementById("sett-value").textContent = sett;
+
+      document.getElementById("weight-desc").textContent = hasInput ? getWeightDescription(weight) : "";
+      document.getElementById("sett-desc").textContent = hasInput ? getSettDescription(sett) : "";
+
+      const target = parseInt(targetSelect.value);
+      if (!isNaN(target) && hasInput && typeof weight === "number") {
+        let diff = weight - target;
+        if (diff > 8) diff = 8;
+        if (diff < -8) diff = -8;
+        targetDiff.textContent = (Difference: ${diff >= 0 ? "+" : ""}${diff});
+      } else {
+        targetDiff.textContent = "";
+      }
+    }
+
+    function clearPair(index) {
+      document.getElementById(x${index}).value = "";
+      document.getElementById(y${index}).value = "";
+      updateResults();
+    }
+
+    document.addEventListener('input', updateResults);
+  </script>
+</body>
+</html>
