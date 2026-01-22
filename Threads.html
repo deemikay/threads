@@ -216,9 +216,9 @@
         if (targetLabel === "Business As Usual") {
           targetDiff.textContent = "No Aftermath";
         } else if (diff === 0) {
-          targetDiff.textContent = "Balanced";
+          targetDiff.textContent = "No points";
         } else if (diff < 0) {
-          targetDiff.textContent = `Underweave Dice = ${Math.abs(diff)}`;
+          targetDiff.textContent = `Underweave points = ${Math.abs(diff)}`;
         } else {
           targetDiff.textContent = `Overweave points = ${diff}`;
         }
