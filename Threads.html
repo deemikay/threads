@@ -71,7 +71,7 @@
       margin: 20px 0;
     }
     .rightcell {
-      font-weight: italic;
+      font-style: italic;   /* FIXED */
       color: #222;
       white-space: pre-line;
     }
@@ -220,28 +220,17 @@
       const overUnderCell = document.getElementById("overunder-cell");
 
       const target = parseInt(targetSelect.value);
-      const targetLabel = targetSelect.options[targetSelect.selectedIndex]?.text;
 
       if (!isNaN(target) && hasInput && typeof weight === "number") {
         let diff = weight - target;
+
         if (diff > 8) diff = 8;
         if (diff < -8) diff = -8;
 
-        const calcDisplay = `(${weight} − ${target}) = ${diff}`;
-
-        if (targetLabel === "Business As Usual") {
-          overUnderCell.innerHTML = "No Overweave";
-        } else if (diff === 0) {
-          overUnderCell.innerHTML = `${calcDisplay}<br>No points`;
-        } else if (diff < 0) {
-          overUnderCell.innerHTML =
-            `${calcDisplay}<br>Underweave points = ${Math.abs(diff)}`;
-        } else {
-          overUnderCell.innerHTML =
-            `${calcDisplay}<br>Overweave points = ${diff}`;
-        }
+        // NEW: Just the calculation, no brackets, no labels
+        overUnderCell.textContent = `${weight} − ${target} = ${diff}`;
       } else {
-        overUnderCell.innerHTML = "";
+        overUnderCell.textContent = "";
       }
     }
 
