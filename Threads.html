@@ -71,7 +71,7 @@
       margin: 20px 0;
     }
     .rightcell {
-      font-style: italic;   /* FIXED */
+      font-style: italic;
       color: #222;
       white-space: pre-line;
     }
@@ -100,20 +100,17 @@
         <td>Tension:</td>
         <td id="tension-value">-</td>
         <td></td>
-        <td></td>
       </tr>
 
       <tr>
         <td>Weight:</td>
         <td id="weight-value">-</td>
-        <td class="descriptor" id="weight-desc"></td>
         <td class="rightcell" id="overunder-cell"></td>
       </tr>
 
       <tr>
         <td>Fray:</td>
         <td id="sett-value">-</td>
-        <td class="descriptor" id="sett-desc"></td>
         <td class="descriptor" id="fray-effect"></td>
       </tr>
     </table>
@@ -152,17 +149,6 @@
       }
     });
 
-    function getWeightDescription(value) {
-      if (value >= 42) return "World Changing";
-      if (value >= 36) return "Near Impossible";
-      if (value >= 30) return "Ludicrous";
-      if (value >= 24) return "Very Hard";
-      if (value >= 18) return "Hard";
-      if (value >= 12) return "Tricky";
-      if (value >= 0) return "Business As Usual";
-      return "";
-    }
-
     function getSettDescription(value) {
       if (value >= 441) return "Total Collapse";
       if (value >= 324) return "Catastrophic";
@@ -175,13 +161,13 @@
     }
 
     function getFrayEffect(value) {
-      if (value >= 441) return "4×S & 1×S(P)";
-      if (value >= 324) return "3×S & erase 1×F";
-      if (value >= 225) return "3×S";
-      if (value >= 144) return "2×S & erase 1×F";
-      if (value >= 81) return "2×S";
-      if (value >= 36) return "1×S";
-      if (value >= 0) return "-";
+      if (value >= 441) return "4 S and 1 Permanent S";
+      if (value >= 324) return "3 S and erase 1 F";
+      if (value >= 225) return "3 S";
+      if (value >= 144) return "2 S and erase 1 F";
+      if (value >= 81) return "2 S";
+      if (value >= 36) return "1 S";
+      if (value >= 0) return "none";
       return "";
     }
 
@@ -208,12 +194,6 @@
       document.getElementById("tension-value").textContent = tension;
       document.getElementById("sett-value").textContent = sett;
 
-      document.getElementById("weight-desc").textContent =
-        hasInput ? getWeightDescription(weight) : "";
-
-      document.getElementById("sett-desc").textContent =
-        hasInput ? getSettDescription(sett) : "";
-
       document.getElementById("fray-effect").textContent =
         hasInput ? getFrayEffect(sett) : "";
 
@@ -227,7 +207,7 @@
         if (diff > 8) diff = 8;
         if (diff < -8) diff = -8;
 
-        // NEW: Just the calculation, no brackets, no labels
+        // Only the calculation, no labels
         overUnderCell.textContent = `${weight} − ${target} = ${diff}`;
       } else {
         overUnderCell.textContent = "";
