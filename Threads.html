@@ -161,13 +161,13 @@
     }
 
     function getFrayEffect(value) {
-      if (value >= 441) return "+4S / +1S(perm)";
-      if (value >= 324) return "+3S / -1F";
-      if (value >= 225) return "+3S";
-      if (value >= 144) return "+2S / -1F";
-      if (value >= 81) return "+2S";
-      if (value >= 36) return "+1S";
-      if (value >= 0) return "-";
+      if (value >= 441) return "4 S and 1 Permanent S";
+      if (value >= 324) return "3 S and erase 1 F";
+      if (value >= 225) return "3 S";
+      if (value >= 144) return "2 S and erase 1 F";
+      if (value >= 81) return "2 S";
+      if (value >= 36) return "1 S";
+      if (value >= 0) return "none";
       return "";
     }
 
@@ -208,7 +208,7 @@
         if (diff < -8) diff = -8;
 
         // Only the calculation, no labels
-        overUnderCell.textContent = `${weight} − ${target}   »   ${diff}`;
+        overUnderCell.textContent = `${weight} − ${target} = ${diff}`;
       } else {
         overUnderCell.textContent = "";
       }
