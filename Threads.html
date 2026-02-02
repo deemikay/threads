@@ -70,8 +70,7 @@
     #target-container {
       margin: 20px 0;
     }
-    #target-diff {
-      margin-left: 1em;
+    .rightcell {
       font-weight: bold;
       color: #222;
       white-space: pre-line;
@@ -101,12 +100,16 @@
         <td>Tension:</td>
         <td id="tension-value">-</td>
         <td></td>
+        <td></td>
       </tr>
+
       <tr>
         <td>Weight:</td>
         <td id="weight-value">-</td>
         <td class="descriptor" id="weight-desc"></td>
+        <td class="rightcell" id="overunder-cell"></td>
       </tr>
+
       <tr>
         <td>Fray:</td>
         <td id="sett-value">-</td>
@@ -114,7 +117,6 @@
         <td class="descriptor" id="fray-effect"></td>
       </tr>
     </table>
-    <p id="target-diff"></p>
   </div>
 
   <div id="pairs"></div>
@@ -122,7 +124,6 @@
   <script>
     const pairContainer = document.getElementById('pairs');
     const targetSelect = document.getElementById('target-weight');
-    const targetDiff = document.getElementById('target-diff');
 
     const labels = [
       { name: "Story / Location / Tone", count: 2 },
@@ -142,7 +143,7 @@
         const div = document.createElement('div');
         div.className = 'pair';
         div.innerHTML = `
-          <input type="number" id="x${pairIndex}"> 
+          <input type="number" id="x${pairIndex}">
           <span class="bar">|</span>
           <input type="number" id="y${pairIndex}">
           <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
@@ -195,14 +196,8 @@
         const x = parseFloat(xVal);
         const y = parseFloat(yVal);
 
-        if (!isNaN(x)) {
-          X += x;
-          hasInput = true;
-        }
-        if (!isNaN(y)) {
-          Y += y;
-          hasInput = true;
-        }
+        if (!isNaN(x)) { X += x; hasInput = true; }
+        if (!isNaN(y)) { Y += y; hasInput = true; }
       }
 
       const weight = hasInput ? X + Y : "-";
@@ -213,9 +208,16 @@
       document.getElementById("tension-value").textContent = tension;
       document.getElementById("sett-value").textContent = sett;
 
-      document.getElementById("weight-desc").textContent = hasInput ? getWeightDescription(weight) : "";
-      document.getElementById("sett-desc").textContent = hasInput ? getSettDescription(sett) : "";
-      document.getElementById("fray-effect").textContent = hasInput ? getFrayEffect(sett) : "";
+      document.getElementById("weight-desc").textContent =
+        hasInput ? getWeightDescription(weight) : "";
+
+      document.getElementById("sett-desc").textContent =
+        hasInput ? getSettDescription(sett) : "";
+
+      document.getElementById("fray-effect").textContent =
+        hasInput ? getFrayEffect(sett) : "";
+
+      const overUnderCell = document.getElementById("overunder-cell");
 
       const target = parseInt(targetSelect.value);
       const targetLabel = targetSelect.options[targetSelect.selectedIndex]?.text;
@@ -228,16 +230,18 @@
         const calcDisplay = `(${weight} − ${target}) = ${diff}`;
 
         if (targetLabel === "Business As Usual") {
-          targetDiff.innerHTML = `No Overweave`;
+          overUnderCell.innerHTML = "No Overweave";
         } else if (diff === 0) {
-          targetDiff.innerHTML = `${calcDisplay}<br>No points`;
+          overUnderCell.innerHTML = `${calcDisplay}<br>No points`;
         } else if (diff < 0) {
-          targetDiff.innerHTML = `${calcDisplay}<br>Underweave points = ${Math.abs(diff)}`;
+          overUnderCell.innerHTML =
+            `${calcDisplay}<br>Underweave points = ${Math.abs(diff)}`;
         } else {
-          targetDiff.innerHTML = `${calcDisplay}<br>Overweave points = ${diff}`;
+          overUnderCell.innerHTML =
+            `${calcDisplay}<br>Overweave points = ${diff}`;
         }
       } else {
-        targetDiff.textContent = "";
+        overUnderCell.innerHTML = "";
       }
     }
 
