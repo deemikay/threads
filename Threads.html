@@ -111,6 +111,7 @@
         <td>Fray:</td>
         <td id="sett-value">-</td>
         <td class="descriptor" id="sett-desc"></td>
+        <td class="descriptor" id="fray-effect"></td>
       </tr>
     </table>
     <p id="target-diff"></p>
@@ -172,6 +173,17 @@
       return "";
     }
 
+    function getFrayEffect(value) {
+      if (value >= 441) return "4 Snags and 1 Permanent Snag";
+      if (value >= 324) return "3 Snags and erase 1 Fibre";
+      if (value >= 225) return "3 Snags";
+      if (value >= 144) return "2 Snags and erase 1 Fibre";
+      if (value >= 81) return "2 Snags";
+      if (value >= 36) return "1 Snag";
+      if (value >= 0) return "none";
+      return "";
+    }
+
     function updateResults() {
       let X = 0, Y = 0;
       let hasInput = false;
@@ -203,6 +215,7 @@
 
       document.getElementById("weight-desc").textContent = hasInput ? getWeightDescription(weight) : "";
       document.getElementById("sett-desc").textContent = hasInput ? getSettDescription(sett) : "";
+      document.getElementById("fray-effect").textContent = hasInput ? getFrayEffect(sett) : "";
 
       const target = parseInt(targetSelect.value);
       const targetLabel = targetSelect.options[targetSelect.selectedIndex]?.text;
