@@ -161,12 +161,12 @@
     }
 
     function getFrayEffect(value) {
-      if (value >= 441) return "4×S / 1× S(perm)";
-      if (value >= 324) return "3×S / erase 1×F";
-      if (value >= 225) return "3×S";
-      if (value >= 144) return "2×S & erase 1×F";
-      if (value >= 81) return "2×S";
-      if (value >= 36) return "1×S";
+      if (value >= 441) return "4S / 1S(perm)";
+      if (value >= 324) return "3S / erase 1F";
+      if (value >= 225) return "3S";
+      if (value >= 144) return "2S / erase 1F";
+      if (value >= 81) return "2S";
+      if (value >= 36) return "1S";
       if (value >= 0) return "-";
       return "";
     }
