@@ -110,6 +110,8 @@
       oninput="updateResults()"
       title="Manual override for Required Weight"
     >
+
+    <button class="clear-button" onclick="clearManual()">×</button>
   </div>
 
   <div id="results">
@@ -207,7 +209,14 @@
 
       const overUnderCell = document.getElementById("overunder-cell");
 
-      // Determine required weight: manual override OR dropdown
+      // Disable dropdown if override has value
+      if (manualTarget.value !== "") {
+        targetSelect.disabled = true;
+      } else {
+        targetSelect.disabled = false;
+      }
+
+      // Determine required weight
       let target = null;
 
       if (manualTarget.value !== "") {
@@ -241,6 +250,12 @@
     function clearPair(index) {
       document.getElementById(`x${index}`).value = "";
       document.getElementById(`y${index}`).value = "";
+      updateResults();
+    }
+
+    function clearManual() {
+      manualTarget.value = "";
+      targetSelect.disabled = false;
       updateResults();
     }
 
