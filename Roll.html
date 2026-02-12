@@ -79,6 +79,13 @@
 
   <div id="results">
     <table>
+
+      <tr>
+        <td>Required:</td>
+        <td id="required-value">-</td>
+        <td></td>
+      </tr>
+
       <tr>
         <td>Tension:</td>
         <td id="tension-value">-</td>
@@ -96,6 +103,7 @@
         <td id="sett-value">-</td>
         <td class="descriptor" id="fray-effect"></td>
       </tr>
+
     </table>
   </div>
 
@@ -184,6 +192,10 @@
       if (!isNaN(y1)) story1 += y1;
 
       const requiredWeight = 2 * (story0 + story1);
+
+      // Show Required value
+      document.getElementById("required-value").textContent =
+        requiredWeight > 0 ? requiredWeight : "-";
 
       // If required weight is 0 → no calculation
       if (requiredWeight === 0 || !hasInput) {
