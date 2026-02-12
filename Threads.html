@@ -67,55 +67,25 @@
       font-style: italic;
       color: #555;
     }
-    #target-container {
-      margin: 20px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
     .rightcell {
       font-style: italic;
       color: #222;
       white-space: pre-line;
-    }
-    #manual-target {
-      width: 5ch;
-      font-size: 18px;
-      text-align: center;
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <h2>Make a Weave</h2>
 
-  <div id="target-container">
-    <label for="target-weight"><strong>Required:</strong></label>
-
-    <select id="target-weight" onchange="updateResults()">
-      <option value="">— Select —</option>
-      <option value="0">Business As Usual</option>
-      <option value="12">Tricky</option>
-      <option value="18">Hard</option>
-      <option value="24">Very Hard</option>
-      <option value="30">Ludicrous</option>
-      <option value="36">Near Impossible</option>
-      <option value="42">World Changing</option>
-    </select>
-
-    <input 
-      id="manual-target" 
-      type="number" 
-      placeholder="—" 
-      oninput="updateResults()"
-      title="Manual override for Required Weight"
-    >
-
-    <button class="clear-button" onclick="clearManual()">×</button>
-  </div>
-
   <div id="results">
     <table>
+
+      <tr>
+        <td>Required:</td>
+        <td id="required-value">-</td>
+        <td id="required-note" class="descriptor"></td>
+      </tr>
+
       <tr>
         <td>Tension:</td>
         <td id="tension-value">-</td>
@@ -133,6 +103,7 @@
         <td id="sett-value">-</td>
         <td class="descriptor" id="fray-effect"></td>
       </tr>
+
     </table>
   </div>
 
@@ -140,8 +111,6 @@
 
   <script>
     const pairContainer = document.getElementById('pairs');
-    const targetSelect = document.getElementById('target-weight');
-    const manualTarget = document.getElementById('manual-target');
 
     const labels = [
       { name: "Story / Location / Tone", count: 2 },
@@ -209,53 +178,52 @@
 
       const overUnderCell = document.getElementById("overunder-cell");
 
-      // Disable dropdown if override has value
-      if (manualTarget.value !== "") {
-        targetSelect.disabled = true;
+      // REQUIRED WEIGHT = 2 × (Story pair 0 + Story pair 1)
+      let story0 = 0, story1 = 0;
+
+      const x0 = parseFloat(document.getElementById("x0").value);
+      const y0 = parseFloat(document.getElementById("y0").value);
+      const x1 = parseFloat(document.getElementById("x1").value);
+      const y1 = parseFloat(document.getElementById("y1").value);
+
+      if (!isNaN(x0)) story0 += x0;
+      if (!isNaN(y0)) story0 += y0;
+      if (!isNaN(x1)) story1 += x1;
+      if (!isNaN(y1)) story1 += y1;
+
+      let requiredWeight = 2 * (story0 + story1);
+
+      // NEW RULE 1: Cap at 36
+      if (requiredWeight > 36) requiredWeight = 36;
+
+      // Show Required value
+      document.getElementById("required-value").textContent =
+        requiredWeight > 0 ? requiredWeight : "-";
+
+      // NEW RULE 2: If Required < 12 → "(dice only)"
+      if (requiredWeight > 0 && requiredWeight < 12) {
+        document.getElementById("required-note").textContent = "(dice only)";
       } else {
-        targetSelect.disabled = false;
+        document.getElementById("required-note").textContent = "";
       }
 
-      // Determine required weight
-      let target = null;
-
-      if (manualTarget.value !== "") {
-        target = parseInt(manualTarget.value);
-      } else {
-        target = parseInt(targetSelect.value);
-      }
-
-      const targetLabel = targetSelect.options[targetSelect.selectedIndex]?.text;
-
-      // BUSINESS AS USUAL → no calculation
-      if (targetLabel === "Business As Usual" && manualTarget.value === "") {
-        overUnderCell.textContent = "";
-        return;
-      }
-
-      // No calculation if no target
-      if (isNaN(target) || !hasInput || typeof weight !== "number") {
+      // If required weight is 0 → no calculation
+      if (requiredWeight === 0 || !hasInput) {
         overUnderCell.textContent = "";
         return;
       }
 
       // Calculate difference
-      let diff = weight - target;
+      let diff = weight - requiredWeight;
       if (diff > 8) diff = 8;
       if (diff < -8) diff = -8;
 
-      overUnderCell.textContent = `${weight} − ${target} → ${diff}`;
+      overUnderCell.textContent = `${weight} − ${requiredWeight} → ${diff}`;
     }
 
     function clearPair(index) {
       document.getElementById(`x${index}`).value = "";
       document.getElementById(`y${index}`).value = "";
-      updateResults();
-    }
-
-    function clearManual() {
-      manualTarget.value = "";
-      targetSelect.disabled = false;
       updateResults();
     }
 
