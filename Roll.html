@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Thread Roll</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threads: Make a Weave</title>
   <style>
     body {
       font-family: sans-serif;
@@ -13,72 +12,200 @@
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
-      background-color: #fdfdfd;
-      color: #222;
-      text-align: left;
+      position: relative;
+    }
+    input {
+      width: 4ch;
+      margin: 5px;
+      font-size: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .pair {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .bar {
+      font-weight: bold;
+      font-size: 20px;
+      color: #444;
+    }
+    .clear-button {
+      font-size: 18px;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 0 6px;
     }
     h2 {
       font-size: 24px;
       text-align: center;
-      margin-bottom: 0.5em;
     }
     .section-label {
       font-weight: bold;
       margin-top: 30px;
       margin-bottom: 10px;
+      text-align: center;
     }
-    .outcome-block {
-      margin-bottom: 20px;
+    #results {
+      margin-bottom: 30px;
     }
-    .outcome-block p {
-      margin: 4px 0;
-      text-indent: 1em;
+    #results table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-left: 1em;
     }
-    .parity {
-      margin-left: 2em;
+    #results td {
+      padding: 4px 8px;
+      vertical-align: top;
+    }
+    .descriptor {
       font-style: italic;
+      color: #555;
     }
-    .footer {
-      margin-top: 30px;
+    .rightcell {
       font-style: italic;
-      color: #444;
+      color: #222;
+      white-space: pre-line;
     }
   </style>
 </head>
 <body>
+  <h2>Make a Weave</h2>
 
-  <h2>The Thread Roll</h2>
+  <div id="results">
+    <table>
+      <tr>
+        <td>Tension:</td>
+        <td id="tension-value">-</td>
+        <td></td>
+      </tr>
 
-  <p><strong>Whenever you make a Weave:</strong> roll 2d6 + Tension</p>
+      <tr>
+        <td>Weight:</td>
+        <td id="weight-value">-</td>
+        <td class="rightcell" id="overunder-cell"></td>
+      </tr>
 
-  <div class="section-label">Success (9–12)</div>
-  <div class="outcome-block">
-    <p>You succeed and gain a Boost.</p>
-    <p>The GM adds a Boost to a Tone Thread.</p>
-    <p>Check parity using the raw 2d6 total:</p>
-    <p class="parity">Even: Clear success</p>
-    <p class="parity">Odd: Sting in the tail → add 1 Burden to a Thread.</p>
-    <p>The GM narrates the outcome.</p>
+      <tr>
+        <td>Fray:</td>
+        <td id="sett-value">-</td>
+        <td class="descriptor" id="fray-effect"></td>
+      </tr>
+    </table>
   </div>
 
-  <div class="section-label">Twist (6–8)</div>
-  <div class="outcome-block">
-    <p>You succeed but the GM introduces a Twist…</p>
-  </div>
+  <div id="pairs"></div>
 
-  <div class="section-label">Failure (2–5)</div>
-  <div class="outcome-block">
-    <p>You fail and gain a Burden.</p>
-    <p>The GM adds a Burden to a Tone Thread.</p>
-    <p>Check parity using the raw 2d6 total:</p>
-    <p class="parity">Even: Full failure</p>
-    <p class="parity">Odd: Silver lining → add 1 Boost to a Thread.</p>
-    <p>The GM introduces an Immediate Consequence!</p>
-  </div>
+  <script>
+    const pairContainer = document.getElementById('pairs');
 
-  <div class="footer">
-    No matter the outcome, the GM narrates the result through a Tone Thread.
-  </div>
+    const labels = [
+      { name: "Story / Location / Tone", count: 2 },
+      { name: "Character", count: 3 },
+      { name: "Other", count: 1 }
+    ];
 
+    let pairIndex = 0;
+
+    labels.forEach(section => {
+      const sectionLabel = document.createElement('div');
+      sectionLabel.className = 'section-label';
+      sectionLabel.innerText = section.name;
+      pairContainer.appendChild(sectionLabel);
+
+      for (let i = 0; i < section.count; i++) {
+        const div = document.createElement('div');
+        div.className = 'pair';
+        div.innerHTML = `
+          <input type="number" id="x${pairIndex}">
+          <span class="bar">|</span>
+          <input type="number" id="y${pairIndex}">
+          <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
+        pairContainer.appendChild(div);
+        pairIndex++;
+      }
+    });
+
+    function getFrayEffect(value) {
+      if (value >= 441) return "4 S and 1 Permanent S";
+      if (value >= 324) return "3 S and erase 1 F";
+      if (value >= 225) return "3 S";
+      if (value >= 144) return "2 S and erase 1 F";
+      if (value >= 81) return "2 S";
+      if (value >= 36) return "1 S";
+      if (value >= 0) return "none";
+      return "";
+    }
+
+    function updateResults() {
+      let X = 0, Y = 0;
+      let hasInput = false;
+
+      for (let i = 0; i < 6; i++) {
+        const xVal = document.getElementById(`x${i}`).value;
+        const yVal = document.getElementById(`y${i}`).value;
+
+        const x = parseFloat(xVal);
+        const y = parseFloat(yVal);
+
+        if (!isNaN(x)) { X += x; hasInput = true; }
+        if (!isNaN(y)) { Y += y; hasInput = true; }
+      }
+
+      const weight = hasInput ? X + Y : "-";
+      const tension = hasInput ? X - Y : "-";
+      const sett = hasInput ? X * Y : "-";
+
+      document.getElementById("weight-value").textContent = weight;
+      document.getElementById("tension-value").textContent = tension;
+      document.getElementById("sett-value").textContent = sett;
+
+      document.getElementById("fray-effect").textContent =
+        hasInput ? getFrayEffect(sett) : "";
+
+      const overUnderCell = document.getElementById("overunder-cell");
+
+      // REQUIRED WEIGHT = 2 × (Story pair 0 + Story pair 1)
+      let story0 = 0, story1 = 0;
+
+      const x0 = parseFloat(document.getElementById("x0").value);
+      const y0 = parseFloat(document.getElementById("y0").value);
+      const x1 = parseFloat(document.getElementById("x1").value);
+      const y1 = parseFloat(document.getElementById("y1").value);
+
+      if (!isNaN(x0)) story0 += x0;
+      if (!isNaN(y0)) story0 += y0;
+      if (!isNaN(x1)) story1 += x1;
+      if (!isNaN(y1)) story1 += y1;
+
+      const requiredWeight = 2 * (story0 + story1);
+
+      // If required weight is 0 → no calculation
+      if (requiredWeight === 0 || !hasInput) {
+        overUnderCell.textContent = "";
+        return;
+      }
+
+      // Calculate difference
+      let diff = weight - requiredWeight;
+      if (diff > 8) diff = 8;
+      if (diff < -8) diff = -8;
+
+      overUnderCell.textContent = `${weight} − ${requiredWeight} → ${diff}`;
+    }
+
+    function clearPair(index) {
+      document.getElementById(`x${index}`).value = "";
+      document.getElementById(`y${index}`).value = "";
+      updateResults();
+    }
+
+    document.addEventListener('input', updateResults);
+  </script>
 </body>
 </html>
