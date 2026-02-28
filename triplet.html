@@ -19,6 +19,7 @@
       font-size: 18px;
       text-align: center;
       font-weight: bold;
+      transition: background 0.2s, color 0.2s;
     }
     .pair {
       display: flex;
@@ -63,6 +64,22 @@
       font-style: italic;
       color: #222;
       white-space: pre-line;
+    }
+
+    /* NEW: colour coding */
+    .fraying {
+      color: #b30000;
+      font-weight: bold;
+    }
+    .advantage {
+      color: #0a7a0a;
+      font-weight: bold;
+    }
+
+    /* NEW: highlight heaviest slot */
+    .heaviest {
+      background: #333;
+      color: white;
     }
   </style>
 </head>
@@ -126,6 +143,12 @@
       let X = 0, Y = 0;
       let hasInput = false;
 
+      // Reset all highlighting
+      for (let i = 0; i < 3; i++) {
+        document.getElementById(`x${i}`).classList.remove("heaviest");
+        document.getElementById(`y${i}`).classList.remove("heaviest");
+      }
+
       // Collect all values
       for (let i = 0; i < 4; i++) {
         const x = parseFloat(document.getElementById(`x${i}`).value);
@@ -143,6 +166,7 @@
 
       // Required Weight = 2 × heaviest main slot (0,1,2)
       let maxMain = 0;
+      let slotValues = [];
 
       for (let i = 0; i < 3; i++) {
         let slot = 0;
@@ -152,6 +176,7 @@
         if (!isNaN(x)) slot += x;
         if (!isNaN(y)) slot += y;
 
+        slotValues[i] = slot;
         if (slot > maxMain) maxMain = slot;
       }
 
@@ -160,7 +185,16 @@
       document.getElementById("required-value").textContent =
         required > 0 ? required : "-";
 
+      // Highlight heaviest slot(s)
+      for (let i = 0; i < 3; i++) {
+        if (slotValues[i] === maxMain && maxMain > 0) {
+          document.getElementById(`x${i}`).classList.add("heaviest");
+          document.getElementById(`y${i}`).classList.add("heaviest");
+        }
+      }
+
       const statusCell = document.getElementById("weight-status");
+      statusCell.className = "rightcell"; // reset
 
       if (!hasInput || required === 0) {
         statusCell.textContent = "";
@@ -171,10 +205,12 @@
 
       if (diff < 0) {
         statusCell.textContent = "Fraying: add a snag";
+        statusCell.classList.add("fraying");
       } else if (diff === 0) {
         statusCell.textContent = "Balanced";
       } else {
         statusCell.textContent = "Advantage: add a dice";
+        statusCell.classList.add("advantage");
       }
     }
 
