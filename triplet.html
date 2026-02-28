@@ -66,7 +66,7 @@
       white-space: pre-line;
     }
 
-    /* NEW: colour coding */
+    /* Colour coding */
     .fraying {
       color: #b30000;
       font-weight: bold;
@@ -76,7 +76,17 @@
       font-weight: bold;
     }
 
-    /* NEW: highlight heaviest slot */
+    /* Tension colours */
+    .tension-red {
+      color: #b30000;
+      font-weight: bold;
+    }
+    .tension-green {
+      color: #0a7a0a;
+      font-weight: bold;
+    }
+
+    /* Highlight heaviest slot */
     .heaviest {
       background: #333;
       color: white;
@@ -94,16 +104,17 @@
         <td id="required-note" class="rightcell"></td>
       </tr>
 
-      <tr>
-        <td>Tension:</td>
-        <td id="tension-value">-</td>
-        <td></td>
-      </tr>
-
+      <!-- Weight now comes BEFORE Tension -->
       <tr>
         <td>Weight:</td>
         <td id="weight-value">-</td>
         <td class="rightcell" id="weight-status"></td>
+      </tr>
+
+      <tr>
+        <td>Tension:</td>
+        <td id="tension-value">-</td>
+        <td id="tension-status" class="rightcell"></td>
       </tr>
     </table>
   </div>
@@ -143,13 +154,13 @@
       let X = 0, Y = 0;
       let hasInput = false;
 
-      // Reset all highlighting
+      // Reset highlighting
       for (let i = 0; i < 3; i++) {
         document.getElementById(`x${i}`).classList.remove("heaviest");
         document.getElementById(`y${i}`).classList.remove("heaviest");
       }
 
-      // Collect all values
+      // Collect values
       for (let i = 0; i < 4; i++) {
         const x = parseFloat(document.getElementById(`x${i}`).value);
         const y = parseFloat(document.getElementById(`y${i}`).value);
@@ -159,12 +170,11 @@
       }
 
       const weight = hasInput ? X + Y : "-";
-      const tension = hasInput ? X - Y : "-";
+      const tensionRaw = hasInput ? X - Y : "-";
 
       document.getElementById("weight-value").textContent = weight;
-      document.getElementById("tension-value").textContent = tension;
 
-      // Required Weight = 2 × heaviest main slot (0,1,2)
+      // Required Weight = 2 × heaviest main slot
       let maxMain = 0;
       let slotValues = [];
 
@@ -193,24 +203,48 @@
         }
       }
 
-      const statusCell = document.getElementById("weight-status");
-      statusCell.className = "rightcell"; // reset
+      const weightStatus = document.getElementById("weight-status");
+      weightStatus.className = "rightcell";
 
       if (!hasInput || required === 0) {
-        statusCell.textContent = "";
+        weightStatus.textContent = "";
+      } else {
+        const diff = weight - required;
+
+        if (diff < 0) {
+          weightStatus.textContent = "Fraying: add a snag";
+          weightStatus.classList.add("fraying");
+        } else if (diff === 0) {
+          weightStatus.textContent = "Balanced";
+        } else {
+          weightStatus.textContent = "Advantage: add a dice";
+          weightStatus.classList.add("advantage");
+        }
+      }
+
+      // Tension formatting
+      const tensionCell = document.getElementById("tension-value");
+      const tensionStatus = document.getElementById("tension-status");
+
+      tensionStatus.textContent = "";
+      tensionCell.className = "";
+
+      if (!hasInput) {
+        tensionCell.textContent = "-";
         return;
       }
 
-      const diff = weight - required;
+      let t = tensionRaw;
 
-      if (diff < 0) {
-        statusCell.textContent = "Fraying: add a snag";
-        statusCell.classList.add("fraying");
-      } else if (diff === 0) {
-        statusCell.textContent = "Balanced";
+      // Add leading +
+      if (t > 0) {
+        tensionCell.textContent = "+" + t;
+        tensionCell.classList.add("tension-green");
+      } else if (t < 0) {
+        tensionCell.textContent = t;
+        tensionCell.classList.add("tension-red");
       } else {
-        statusCell.textContent = "Advantage: add a dice";
-        statusCell.classList.add("advantage");
+        tensionCell.textContent = "0";
       }
     }
 
