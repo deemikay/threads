@@ -86,7 +86,7 @@
       <tr>
         <td>Weight:</td>
         <td id="weight-value">-</td>
-        <td class="rightcell" id="overunder-cell"></td>
+        <td class="rightcell" id="weight-status"></td>
       </tr>
     </table>
   </div>
@@ -160,16 +160,22 @@
       document.getElementById("required-value").textContent =
         required > 0 ? required : "-";
 
-      // No calculation if no input
-      const overUnderCell = document.getElementById("overunder-cell");
+      const statusCell = document.getElementById("weight-status");
+
       if (!hasInput || required === 0) {
-        overUnderCell.textContent = "";
+        statusCell.textContent = "";
         return;
       }
 
-      // Weight − Required
       const diff = weight - required;
-      overUnderCell.textContent = `${weight} − ${required} → ${diff}`;
+
+      if (diff < 0) {
+        statusCell.textContent = "Fraying: add a snag";
+      } else if (diff === 0) {
+        statusCell.textContent = "Balanced";
+      } else {
+        statusCell.textContent = "Advantage: add a dice";
+      }
     }
 
     function clearPair(index) {
