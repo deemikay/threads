@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threads: Simple Weave Calculator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 18px;
+      padding: 20px;
+      margin: 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    input {
+      width: 4ch;
+      margin: 5px;
+      font-size: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .pair {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .bar {
+      font-weight: bold;
+      font-size: 20px;
+      color: #444;
+    }
+    .clear-button {
+      font-size: 18px;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 0 6px;
+    }
+    h2 {
+      font-size: 24px;
+      text-align: center;
+    }
+    .section-label {
+      font-weight: bold;
+      margin-top: 25px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    #results table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-left: 1em;
+    }
+    #results td {
+      padding: 4px 8px;
+      vertical-align: top;
+    }
+    .rightcell {
+      font-style: italic;
+      color: #222;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <h2>Simple Weave</h2>
+
+  <div id="results">
+    <table>
+      <tr>
+        <td>Required:</td>
+        <td id="required-value">-</td>
+        <td id="required-note" class="rightcell"></td>
+      </tr>
+
+      <tr>
+        <td>Tension:</td>
+        <td id="tension-value">-</td>
+        <td></td>
+      </tr>
+
+      <tr>
+        <td>Weight:</td>
+        <td id="weight-value">-</td>
+        <td class="rightcell" id="overunder-cell"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="pairs"></div>
+
+  <script>
+    const pairContainer = document.getElementById('pairs');
+
+    const labels = [
+      { name: "Main Threads", count: 3 },
+      { name: "Other", count: 1 }
+    ];
+
+    let pairIndex = 0;
+
+    labels.forEach(section => {
+      const sectionLabel = document.createElement('div');
+      sectionLabel.className = 'section-label';
+      sectionLabel.innerText = section.name;
+      pairContainer.appendChild(sectionLabel);
+
+      for (let i = 0; i < section.count; i++) {
+        const div = document.createElement('div');
+        div.className = 'pair';
+        div.innerHTML = `
+          <input type="number" id="x${pairIndex}">
+          <span class="bar">|</span>
+          <input type="number" id="y${pairIndex}">
+          <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
+        pairContainer.appendChild(div);
+        pairIndex++;
+      }
+    });
+
+    function updateResults() {
+      let X = 0, Y = 0;
+      let hasInput = false;
+
+      // Collect all values
+      for (let i = 0; i < 4; i++) {
+        const x = parseFloat(document.getElementById(`x${i}`).value);
+        const y = parseFloat(document.getElementById(`y${i}`).value);
+
+        if (!isNaN(x)) { X += x; hasInput = true; }
+        if (!isNaN(y)) { Y += y; hasInput = true; }
+      }
+
+      const weight = hasInput ? X + Y : "-";
+      const tension = hasInput ? X - Y : "-";
+
+      document.getElementById("weight-value").textContent = weight;
+      document.getElementById("tension-value").textContent = tension;
+
+      // Required Weight = 2 × heaviest main slot (0,1,2)
+      let maxMain = 0;
+
+      for (let i = 0; i < 3; i++) {
+        let slot = 0;
+        const x = parseFloat(document.getElementById(`x${i}`).value);
+        const y = parseFloat(document.getElementById(`y${i}`).value);
+
+        if (!isNaN(x)) slot += x;
+        if (!isNaN(y)) slot += y;
+
+        if (slot > maxMain) maxMain = slot;
+      }
+
+      const required = maxMain * 2;
+
+      document.getElementById("required-value").textContent =
+        required > 0 ? required : "-";
+
+      // No calculation if no input
+      const overUnderCell = document.getElementById("overunder-cell");
+      if (!hasInput || required === 0) {
+        overUnderCell.textContent = "";
+        return;
+      }
+
+      // Weight − Required
+      const diff = weight - required;
+      overUnderCell.textContent = `${weight} − ${required} → ${diff}`;
+    }
+
+    function clearPair(index) {
+      document.getElementById(`x${index}`).value = "";
+      document.getElementById(`y${index}`).value = "";
+      updateResults();
+    }
+
+    document.addEventListener('input', updateResults);
+  </script>
+</body>
+</html>
