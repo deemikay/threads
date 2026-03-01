@@ -76,12 +76,12 @@
       font-weight: bold;
     }
 
-    /* Tension colours */
-    .tension-red {
+    /* Stitches colours */
+    .stitches-red {
       color: #b30000;
       font-weight: bold;
     }
-    .tension-green {
+    .stitches-green {
       color: #0a7a0a;
       font-weight: bold;
     }
@@ -94,7 +94,7 @@
   </style>
 </head>
 <body>
-  <h2>Triplet Weave</h2>
+  <h2>Simple Weave</h2>
 
   <div id="results">
     <table>
@@ -104,7 +104,6 @@
         <td id="required-note" class="rightcell"></td>
       </tr>
 
-      <!-- Weight now comes BEFORE Tension -->
       <tr>
         <td>Weight:</td>
         <td id="weight-value">-</td>
@@ -112,9 +111,9 @@
       </tr>
 
       <tr>
-        <td>Tension:</td>
-        <td id="tension-value">-</td>
-        <td id="tension-status" class="rightcell"></td>
+        <td>Stitches:</td>
+        <td id="stitches-value">-</td>
+        <td id="stitches-status" class="rightcell"></td>
       </tr>
     </table>
   </div>
@@ -170,7 +169,7 @@
       }
 
       const weight = hasInput ? X + Y : "-";
-      const tensionRaw = hasInput ? X - Y : "-";
+      const stitchesRaw = hasInput ? X - Y : "-";
 
       document.getElementById("weight-value").textContent = weight;
 
@@ -222,29 +221,28 @@
         }
       }
 
-      // Tension formatting
-      const tensionCell = document.getElementById("tension-value");
-      const tensionStatus = document.getElementById("tension-status");
+      // Stitches formatting
+      const stitchesCell = document.getElementById("stitches-value");
+      const stitchesStatus = document.getElementById("stitches-status");
 
-      tensionStatus.textContent = "";
-      tensionCell.className = "";
+      stitchesStatus.textContent = "";
+      stitchesCell.className = "";
 
       if (!hasInput) {
-        tensionCell.textContent = "-";
+        stitchesCell.textContent = "-";
         return;
       }
 
-      let t = tensionRaw;
+      let s = stitchesRaw;
 
-      // Add leading +
-      if (t > 0) {
-        tensionCell.textContent = "+" + t;
-        tensionCell.classList.add("tension-green");
-      } else if (t < 0) {
-        tensionCell.textContent = t;
-        tensionCell.classList.add("tension-red");
+      if (s > 0) {
+        stitchesCell.textContent = "+" + s;
+        stitchesCell.classList.add("stitches-green");
+      } else if (s < 0) {
+        stitchesCell.textContent = s;
+        stitchesCell.classList.add("stitches-red");
       } else {
-        tensionCell.textContent = "0";
+        stitchesCell.textContent = "0";
       }
     }
 
