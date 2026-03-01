@@ -8,10 +8,8 @@
       font-family: sans-serif;
       font-size: 18px;
       padding: 20px;
-      margin: 0;
       max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 0 auto;
     }
     input {
       width: 4ch;
@@ -42,13 +40,12 @@
       padding: 0 6px;
     }
     h2 {
-      font-size: 24px;
       text-align: center;
+      font-size: 24px;
     }
     .section-label {
       font-weight: bold;
-      margin-top: 25px;
-      margin-bottom: 10px;
+      margin: 25px 0 10px;
       text-align: center;
     }
     #results table {
@@ -65,194 +62,153 @@
       color: #222;
       white-space: pre-line;
     }
-
-    /* Colour coding */
-    .fraying {
-      color: #b30000;
-      font-weight: bold;
-    }
-    .advantage {
-      color: #0a7a0a;
-      font-weight: bold;
-    }
-
-    /* Stitches colours */
-    .stitches-red {
-      color: #b30000;
-      font-weight: bold;
-    }
-    .stitches-green {
-      color: #0a7a0a;
-      font-weight: bold;
-    }
-
-    /* Highlight heaviest slot */
-    .heaviest {
-      background: #333;
-      color: white;
-    }
+    .fraying { color: #b30000; font-weight: bold; }
+    .advantage { color: #0a7a0a; font-weight: bold; }
+    .stitches-red { color: #b30000; font-weight: bold; }
+    .stitches-green { color: #0a7a0a; font-weight: bold; }
+    .heaviest { background: #333; color: white; }
   </style>
 </head>
 <body>
-  <h2>Simple Weave</h2>
+<h2>Simple Weave</h2>
 
-  <div id="results">
-    <table>
-      <tr>
-        <td>Required:</td>
-        <td id="required-value">-</td>
-        <td id="required-note" class="rightcell"></td>
-      </tr>
+<div id="results">
+  <table>
+    <tr>
+      <td>Required:</td>
+      <td id="required-value">-</td>
+      <td id="required-note" class="rightcell"></td>
+    </tr>
+    <tr>
+      <td>Weight:</td>
+      <td id="weight-value">-</td>
+      <td id="weight-status" class="rightcell"></td>
+    </tr>
+    <tr>
+      <td>Stitches:</td>
+      <td id="stitches-value">-</td>
+      <td id="stitches-status" class="rightcell"></td>
+    </tr>
+  </table>
+</div>
 
-      <tr>
-        <td>Weight:</td>
-        <td id="weight-value">-</td>
-        <td class="rightcell" id="weight-status"></td>
-      </tr>
+<div id="pairs"></div>
 
-      <tr>
-        <td>Stitches:</td>
-        <td id="stitches-value">-</td>
-        <td id="stitches-status" class="rightcell"></td>
-      </tr>
-    </table>
-  </div>
+<script>
+const pairContainer = document.getElementById('pairs');
+const labels = [
+  { name: "Main Threads", count: 3 },
+  { name: "Other", count: 1 }
+];
 
-  <div id="pairs"></div>
+let pairIndex = 0;
 
-  <script>
-    const pairContainer = document.getElementById('pairs');
+// Build input pairs
+labels.forEach(section => {
+  const sectionLabel = document.createElement('div');
+  sectionLabel.className = 'section-label';
+  sectionLabel.innerText = section.name;
+  pairContainer.appendChild(sectionLabel);
 
-    const labels = [
-      { name: "Main Threads", count: 3 },
-      { name: "Other", count: 1 }
-    ];
+  for (let i = 0; i < section.count; i++) {
+    const div = document.createElement('div');
+    div.className = 'pair';
+    div.innerHTML = `
+      <input type="number" id="x${pairIndex}" min="0" step="1">
+      <span class="bar">|</span>
+      <input type="number" id="y${pairIndex}" min="0" step="1">
+      <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
+    pairContainer.appendChild(div);
+    pairIndex++;
+  }
+});
 
-    let pairIndex = 0;
+function updateResults() {
+  let totalX = 0, totalY = 0, hasInput = false;
+  let maxMain = 0, slotValues = [];
 
-    labels.forEach(section => {
-      const sectionLabel = document.createElement('div');
-      sectionLabel.className = 'section-label';
-      sectionLabel.innerText = section.name;
-      pairContainer.appendChild(sectionLabel);
+  // Reset highlighting
+  for (let i = 0; i < 3; i++) {
+    document.getElementById(`x${i}`).classList.remove("heaviest");
+    document.getElementById(`y${i}`).classList.remove("heaviest");
+  }
 
-      for (let i = 0; i < section.count; i++) {
-        const div = document.createElement('div');
-        div.className = 'pair';
-        div.innerHTML = `
-          <input type="number" id="x${pairIndex}">
-          <span class="bar">|</span>
-          <input type="number" id="y${pairIndex}">
-          <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
-        pairContainer.appendChild(div);
-        pairIndex++;
-      }
-    });
+  // Collect values
+  for (let i = 0; i < 4; i++) {
+    const x = parseFloat(document.getElementById(`x${i}`).value) || 0;
+    const y = parseFloat(document.getElementById(`y${i}`).value) || 0;
 
-    function updateResults() {
-      let X = 0, Y = 0;
-      let hasInput = false;
+    totalX += x; 
+    totalY += y;
 
-      // Reset highlighting
-      for (let i = 0; i < 3; i++) {
-        document.getElementById(`x${i}`).classList.remove("heaviest");
-        document.getElementById(`y${i}`).classList.remove("heaviest");
-      }
-
-      // Collect values
-      for (let i = 0; i < 4; i++) {
-        const x = parseFloat(document.getElementById(`x${i}`).value);
-        const y = parseFloat(document.getElementById(`y${i}`).value);
-
-        if (!isNaN(x)) { X += x; hasInput = true; }
-        if (!isNaN(y)) { Y += y; hasInput = true; }
-      }
-
-      const weight = hasInput ? X + Y : "-";
-      const stitchesRaw = hasInput ? X - Y : "-";
-
-      document.getElementById("weight-value").textContent = weight;
-
-      // Required Weight = 2 × heaviest main slot
-      let maxMain = 0;
-      let slotValues = [];
-
-      for (let i = 0; i < 3; i++) {
-        let slot = 0;
-        const x = parseFloat(document.getElementById(`x${i}`).value);
-        const y = parseFloat(document.getElementById(`y${i}`).value);
-
-        if (!isNaN(x)) slot += x;
-        if (!isNaN(y)) slot += y;
-
-        slotValues[i] = slot;
-        if (slot > maxMain) maxMain = slot;
-      }
-
-      const required = maxMain * 2;
-
-      document.getElementById("required-value").textContent =
-        required > 0 ? required : "-";
-
-      // Highlight heaviest slot(s)
-      for (let i = 0; i < 3; i++) {
-        if (slotValues[i] === maxMain && maxMain > 0) {
-          document.getElementById(`x${i}`).classList.add("heaviest");
-          document.getElementById(`y${i}`).classList.add("heaviest");
-        }
-      }
-
-      const weightStatus = document.getElementById("weight-status");
-      weightStatus.className = "rightcell";
-
-      if (!hasInput || required === 0) {
-        weightStatus.textContent = "";
-      } else {
-        const diff = weight - required;
-
-        if (diff < 0) {
-          weightStatus.textContent = "Fraying: add a snag";
-          weightStatus.classList.add("fraying");
-        } else if (diff === 0) {
-          weightStatus.textContent = "Balanced";
-        } else {
-          weightStatus.textContent = "Advantage: add a dice";
-          weightStatus.classList.add("advantage");
-        }
-      }
-
-      // Stitches formatting
-      const stitchesCell = document.getElementById("stitches-value");
-      const stitchesStatus = document.getElementById("stitches-status");
-
-      stitchesStatus.textContent = "";
-      stitchesCell.className = "";
-
-      if (!hasInput) {
-        stitchesCell.textContent = "-";
-        return;
-      }
-
-      let s = stitchesRaw;
-
-      if (s > 0) {
-        stitchesCell.textContent = "+" + s;
-        stitchesCell.classList.add("stitches-green");
-      } else if (s < 0) {
-        stitchesCell.textContent = s;
-        stitchesCell.classList.add("stitches-red");
-      } else {
-        stitchesCell.textContent = "0";
-      }
+    if (i < 3) {
+      const slot = x + y;
+      slotValues[i] = slot;
+      if (slot > maxMain) maxMain = slot;
     }
 
-    function clearPair(index) {
-      document.getElementById(`x${index}`).value = "";
-      document.getElementById(`y${index}`).value = "";
-      updateResults();
-    }
+    if (x || y) hasInput = true;
+  }
 
-    document.addEventListener('input', updateResults);
-  </script>
+  // Weight & Stitches
+  const weight = hasInput ? totalX + totalY : "-";
+  const stitches = hasInput ? totalX - totalY : "-";
+  const required = maxMain * 2;
+
+  // Update Weight
+  document.getElementById("weight-value").textContent = weight;
+  const weightStatus = document.getElementById("weight-status");
+  weightStatus.className = "rightcell";
+  if (!hasInput || required === 0) {
+    weightStatus.textContent = "";
+  } else if (weight < required) {
+    weightStatus.textContent = "Fraying: add a snag";
+    weightStatus.classList.add("fraying");
+  } else if (weight === required) {
+    weightStatus.textContent = "Balanced";
+  } else {
+    weightStatus.textContent = "Advantage: add a dice";
+    weightStatus.classList.add("advantage");
+  }
+
+  // Highlight heaviest main slot(s)
+  for (let i = 0; i < 3; i++) {
+    if (slotValues[i] === maxMain && maxMain > 0) {
+      document.getElementById(`x${i}`).classList.add("heaviest");
+      document.getElementById(`y${i}`).classList.add("heaviest");
+    }
+  }
+
+  // Update Required
+  document.getElementById("required-value").textContent = required > 0 ? required : "-";
+  document.getElementById("required-note").textContent = maxMain > 0 ? "(Heaviest main slot ×2)" : "";
+
+  // Update Stitches
+  const stitchesCell = document.getElementById("stitches-value");
+  const stitchesStatus = document.getElementById("stitches-status");
+  stitchesCell.className = "";
+  stitchesStatus.textContent = "";
+
+  if (!hasInput) {
+    stitchesCell.textContent = "-";
+  } else if (stitches > 0) {
+    stitchesCell.textContent = "+" + stitches;
+    stitchesCell.classList.add("stitches-green");
+  } else if (stitches < 0) {
+    stitchesCell.textContent = stitches;
+    stitchesCell.classList.add("stitches-red");
+  } else {
+    stitchesCell.textContent = "0";
+  }
+}
+
+function clearPair(index) {
+  document.getElementById(`x${index}`).value = "";
+  document.getElementById(`y${index}`).value = "";
+  updateResults();
+}
+
+document.addEventListener('input', updateResults);
+</script>
 </body>
 </html>
