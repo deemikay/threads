@@ -59,6 +59,20 @@
       padding: 4px 8px;
       vertical-align: top;
     }
+
+    /* NEW: Required Weight colour states */
+    .req-red {
+      color: #b30000;
+      font-weight: bold;
+    }
+    .req-black {
+      color: #000000;
+      font-weight: bold;
+    }
+    .req-green {
+      color: #0a7a0a;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -78,7 +92,7 @@
         <td></td>
       </tr>
 
-      <tr>
+      <tr id="required-row">
         <td>Required Weight:</td>
         <td id="required-weight">-</td>
         <td id="required-note"></td>
@@ -195,7 +209,18 @@
       }
 
       document.getElementById("required-weight").textContent = required;
-      document.getElementById("required-note").textContent = "";
+
+      // COLOUR CODING LOGIC
+      const row = document.getElementById("required-row");
+      row.classList.remove("req-red", "req-black", "req-green");
+
+      if (required > weaveWeight) {
+        row.classList.add("req-red");
+      } else if (required === weaveWeight) {
+        row.classList.add("req-black");
+      } else {
+        row.classList.add("req-green");
+      }
     }
 
     function clearPair(i) {
