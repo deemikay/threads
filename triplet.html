@@ -82,7 +82,7 @@
       text-align: center;
     }
 
-    /* NEW: highlight heaviest thread */
+    /* NEW: highlight heaviest threads */
     .heaviest {
       background: #e0e0e0;
     }
@@ -190,7 +190,7 @@
       let fibres = 0;
       let snags = 0;
       let threadWeights = [];
-      let threadMap = []; // store {index, weight}
+      let threadMap = [];
 
       // Climate
       const cx = parseInt(document.getElementById("climate-x").value);
@@ -238,13 +238,19 @@
         return;
       }
 
-      // Identify heaviest thread (first only)
-      let maxWeight = Math.max(...threadWeights);
-      let firstHeaviest = threadMap.find(t => t.weight === maxWeight);
+      // Determine how many to highlight
+      let highlightCount = 1;
+      if (threadWeights.length >= 4 && threadWeights.length <= 6) highlightCount = 2;
+      if (threadWeights.length >= 7) highlightCount = 3;
 
-      if (firstHeaviest) {
-        document.getElementById(`x${firstHeaviest.index}`).classList.add("heaviest");
-        document.getElementById(`y${firstHeaviest.index}`).classList.add("heaviest");
+      // Sort threadMap by weight DESC but preserve original index order for ties
+      threadMap.sort((a, b) => b.weight - a.weight || a.index - b.index);
+
+      // Highlight the first N heaviest
+      for (let i = 0; i < highlightCount && i < threadMap.length; i++) {
+        const idx = threadMap[i].index;
+        document.getElementById(`x${idx}`).classList.add("heaviest");
+        document.getElementById(`y${idx}`).classList.add("heaviest");
       }
 
       // Required Weight
