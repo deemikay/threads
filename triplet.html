@@ -60,7 +60,7 @@
       vertical-align: top;
     }
 
-    /* NEW: Required Weight colour states */
+    /* Required Weight colour states */
     .req-red {
       color: #b30000;
       font-weight: bold;
@@ -72,6 +72,13 @@
     .req-green {
       color: #0a7a0a;
       font-weight: bold;
+    }
+
+    /* Surplus/Shortfall box */
+    #outcome-box {
+      margin-top: 20px;
+      margin-left: 1em;
+      white-space: pre-line;
     }
   </style>
 </head>
@@ -99,6 +106,9 @@
       </tr>
     </table>
   </div>
+
+  <!-- SURPLUS / SHORTFALL SECTION -->
+  <div id="outcome-box"></div>
 
   <!-- CLIMATE SECTION -->
   <div class="section-label">Climate</div>
@@ -183,8 +193,13 @@
       const weaveTension = fibres - snags;
       const weaveWeight = fibres + snags;
 
-      document.getElementById("tension-value").textContent =
-        fibres + snags > 0 ? weaveTension : "-";
+      // Tension with leading +
+      if (fibres + snags > 0) {
+        document.getElementById("tension-value").textContent =
+          weaveTension > 0 ? "+" + weaveTension : weaveTension;
+      } else {
+        document.getElementById("tension-value").textContent = "-";
+      }
 
       document.getElementById("weight-value").textContent =
         fibres + snags > 0 ? weaveWeight : "-";
@@ -192,6 +207,7 @@
       if (threadWeights.length === 0) {
         document.getElementById("required-weight").textContent = "-";
         document.getElementById("required-note").textContent = "";
+        document.getElementById("outcome-box").textContent = "";
         return;
       }
 
@@ -199,18 +215,22 @@
 
       const count = threadWeights.length;
       let required = 0;
+      let snagsNeeded = 0;
 
       if (count <= 3) {
         required = 2 * threadWeights[0];
+        snagsNeeded = 1;
       } else if (count <= 6) {
         required = 2 * (threadWeights[0] + threadWeights[1]);
+        snagsNeeded = 2;
       } else {
         required = 2 * (threadWeights[0] + threadWeights[1] + threadWeights[2]);
+        snagsNeeded = 3;
       }
 
       document.getElementById("required-weight").textContent = required;
 
-      // COLOUR CODING LOGIC
+      // COLOUR CODING
       const row = document.getElementById("required-row");
       row.classList.remove("req-red", "req-black", "req-green");
 
@@ -220,6 +240,17 @@
         row.classList.add("req-black");
       } else {
         row.classList.add("req-green");
+      }
+
+      // SURPLUS / SHORTFALL BOX
+      const box = document.getElementById("outcome-box");
+      box.className = row.className; // match colour + weight
+
+      if (required > weaveWeight) {
+        box.textContent =
+          `Shortfall:\nChoose:\n• Knot Range = –1, 0, +1\n• Add Snags: ${snagsNeeded}`;
+      } else {
+        box.textContent = `Surplus:\nKnot Range = 0`;
       }
     }
 
