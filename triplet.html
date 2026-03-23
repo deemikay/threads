@@ -79,6 +79,12 @@
       margin-top: 20px;
       margin-left: 1em;
       white-space: pre-line;
+      text-align: center;
+    }
+
+    /* NEW: highlight heaviest thread */
+    .heaviest {
+      background: #e0e0e0;
     }
   </style>
 </head>
@@ -107,22 +113,18 @@
     </table>
   </div>
 
-  <!-- SURPLUS / SHORTFALL SECTION -->
   <div id="outcome-box"></div>
 
-  <!-- CLIMATE SECTION -->
   <div class="section-label">Climate</div>
   <div class="pair">
-    <input type="number" id="climate-x">
+    <input type="number" id="climate-x" min="1" step="1">
     <span class="bar">|</span>
-    <input type="number" id="climate-y">
+    <input type="number" id="climate-y" min="1" step="1">
     <button class="clear-button" onclick="clearClimate()">&times;</button>
   </div>
 
-  <!-- WEAVE HEADER -->
   <div class="section-label">Weave</div>
 
-  <!-- THREADS SECTION -->
   <div id="pairs"></div>
 
   <script>
@@ -136,9 +138,9 @@
       div.style.display = i === 0 ? "flex" : "none";
 
       div.innerHTML = `
-        <input type="number" id="x${i}">
+        <input type="number" id="x${i}" min="1" step="1">
         <span class="bar">|</span>
-        <input type="number" id="y${i}">
+        <input type="number" id="y${i}" min="1" step="1">
         <button class="clear-button" onclick="clearPair(${i})">&times;</button>
       `;
 
@@ -148,6 +150,27 @@
     for (let i = 0; i < MAX_THREADS; i++) {
       createThreadRow(i);
     }
+
+    function sanitiseInput(id) {
+      const el = document.getElementById(id);
+      let v = el.value;
+      if (v === "") return;
+      v = v.replace(/\D/g, "");
+      if (v === "0") v = "";
+      el.value = v;
+    }
+
+    document.addEventListener("input", () => {
+      sanitiseInput("climate-x");
+      sanitiseInput("climate-y");
+
+      for (let i = 0; i < MAX_THREADS; i++) {
+        sanitiseInput(`x${i}`);
+        sanitiseInput(`y${i}`);
+      }
+
+      updateResults();
+    });
 
     function revealNextRow() {
       for (let i = 0; i < MAX_THREADS - 1; i++) {
@@ -167,24 +190,28 @@
       let fibres = 0;
       let snags = 0;
       let threadWeights = [];
+      let threadMap = []; // store {index, weight}
 
       // Climate
-      const cx = parseFloat(document.getElementById("climate-x").value);
-      const cy = parseFloat(document.getElementById("climate-y").value);
+      const cx = parseInt(document.getElementById("climate-x").value);
+      const cy = parseInt(document.getElementById("climate-y").value);
       if (!isNaN(cx)) fibres += cx;
       if (!isNaN(cy)) snags += cy;
 
       // Threads
       for (let i = 0; i < MAX_THREADS; i++) {
-        const x = parseFloat(document.getElementById(`x${i}`).value);
-        const y = parseFloat(document.getElementById(`y${i}`).value);
+        const x = parseInt(document.getElementById(`x${i}`).value);
+        const y = parseInt(document.getElementById(`y${i}`).value);
 
         let f = 0, s = 0;
         if (!isNaN(x)) f += x;
         if (!isNaN(y)) s += y;
 
-        if (f + s > 0) {
-          threadWeights.push(f + s);
+        const w = f + s;
+
+        if (w > 0) {
+          threadWeights.push(w);
+          threadMap.push({ index: i, weight: w });
           fibres += f;
           snags += s;
         }
@@ -193,24 +220,34 @@
       const weaveTension = fibres - snags;
       const weaveWeight = fibres + snags;
 
-      // Tension with leading +
-      if (fibres + snags > 0) {
-        document.getElementById("tension-value").textContent =
-          weaveTension > 0 ? "+" + weaveTension : weaveTension;
-      } else {
-        document.getElementById("tension-value").textContent = "-";
-      }
+      document.getElementById("tension-value").textContent =
+        fibres + snags > 0 ? (weaveTension > 0 ? "+" + weaveTension : weaveTension) : "-";
 
       document.getElementById("weight-value").textContent =
         fibres + snags > 0 ? weaveWeight : "-";
 
+      // Clear previous highlighting
+      for (let i = 0; i < MAX_THREADS; i++) {
+        document.getElementById(`x${i}`).classList.remove("heaviest");
+        document.getElementById(`y${i}`).classList.remove("heaviest");
+      }
+
       if (threadWeights.length === 0) {
         document.getElementById("required-weight").textContent = "-";
-        document.getElementById("required-note").textContent = "";
         document.getElementById("outcome-box").textContent = "";
         return;
       }
 
+      // Identify heaviest thread (first only)
+      let maxWeight = Math.max(...threadWeights);
+      let firstHeaviest = threadMap.find(t => t.weight === maxWeight);
+
+      if (firstHeaviest) {
+        document.getElementById(`x${firstHeaviest.index}`).classList.add("heaviest");
+        document.getElementById(`y${firstHeaviest.index}`).classList.add("heaviest");
+      }
+
+      // Required Weight
       threadWeights.sort((a, b) => b - a);
 
       const count = threadWeights.length;
@@ -230,7 +267,7 @@
 
       document.getElementById("required-weight").textContent = required;
 
-      // COLOUR CODING
+      // Colour coding
       const row = document.getElementById("required-row");
       row.classList.remove("req-red", "req-black", "req-green");
 
@@ -242,13 +279,12 @@
         row.classList.add("req-green");
       }
 
-      // SURPLUS / SHORTFALL BOX
+      // Outcome box
       const box = document.getElementById("outcome-box");
-      box.className = row.className; // match colour + weight
+      box.className = row.className;
 
       if (required > weaveWeight) {
-        box.textContent =
-          `Knot: –1 to +1 OR +Snags: ${snagsNeeded}`;
+        box.textContent = `Knot: –1 to +1 OR +Snags: ${snagsNeeded}`;
       } else {
         box.textContent = `Knot: 0`;
       }
@@ -265,8 +301,6 @@
       document.getElementById("climate-y").value = "";
       updateResults();
     }
-
-    document.addEventListener('input', updateResults);
   </script>
 </body>
 </html>
