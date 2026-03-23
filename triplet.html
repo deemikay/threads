@@ -91,43 +91,72 @@
     </table>
   </div>
 
+  <!-- CLIMATE SECTION -->
+  <div class="section-label">Climate</div>
+  <div class="pair">
+    <input type="number" id="climate-x">
+    <span class="bar">|</span>
+    <input type="number" id="climate-y">
+    <button class="clear-button" onclick="clearClimate()">&times;</button>
+  </div>
+
+  <!-- THREADS SECTION -->
   <div id="pairs"></div>
 
   <script>
     const pairContainer = document.getElementById('pairs');
 
-    // 9 possible threads (3 rows of 3)
-    const labels = [
-      { name: "Threads", count: 9 }
-    ];
+    // We allow up to 9 threads, but only show them progressively
+    const MAX_THREADS = 9;
 
-    let pairIndex = 0;
+    function createThreadRow(i) {
+      const div = document.createElement('div');
+      div.className = 'pair';
+      div.id = `row${i}`;
+      div.style.display = i === 0 ? "flex" : "none"; // only first visible
 
-    labels.forEach(section => {
-      const sectionLabel = document.createElement('div');
-      sectionLabel.className = 'section-label';
-      sectionLabel.innerText = section.name;
-      pairContainer.appendChild(sectionLabel);
+      div.innerHTML = `
+        <input type="number" id="x${i}">
+        <span class="bar">|</span>
+        <input type="number" id="y${i}">
+        <button class="clear-button" onclick="clearPair(${i})">&times;</button>
+      `;
 
-      for (let i = 0; i < section.count; i++) {
-        const div = document.createElement('div');
-        div.className = 'pair';
-        div.innerHTML = `
-          <input type="number" id="x${pairIndex}">
-          <span class="bar">|</span>
-          <input type="number" id="y${pairIndex}">
-          <button class="clear-button" onclick="clearPair(${pairIndex})">&times;</button>`;
-        pairContainer.appendChild(div);
-        pairIndex++;
+      pairContainer.appendChild(div);
+    }
+
+    // Build all rows (hidden except first)
+    for (let i = 0; i < MAX_THREADS; i++) {
+      createThreadRow(i);
+    }
+
+    function revealNextRow() {
+      for (let i = 0; i < MAX_THREADS - 1; i++) {
+        const x = document.getElementById(`x${i}`).value;
+        const y = document.getElementById(`y${i}`).value;
+
+        if ((x !== "" || y !== "") && document.getElementById(`row${i+1}`).style.display === "none") {
+          document.getElementById(`row${i+1}`).style.display = "flex";
+          break;
+        }
       }
-    });
+    }
 
     function updateResults() {
+      revealNextRow();
+
       let totalWeight = 0;
       let threadWeights = [];
 
-      // Collect all 9 thread weights
-      for (let i = 0; i < 9; i++) {
+      // Climate weight (added to total only)
+      const cx = parseFloat(document.getElementById("climate-x").value);
+      const cy = parseFloat(document.getElementById("climate-y").value);
+      let climateWeight = 0;
+      if (!isNaN(cx)) climateWeight += cx;
+      if (!isNaN(cy)) climateWeight += cy;
+
+      // Collect thread weights
+      for (let i = 0; i < MAX_THREADS; i++) {
         const x = parseFloat(document.getElementById(`x${i}`).value);
         const y = parseFloat(document.getElementById(`y${i}`).value);
 
@@ -141,8 +170,11 @@
         }
       }
 
+      // Add climate to total
+      totalWeight += climateWeight;
+
       document.getElementById("total-weight").textContent =
-        threadWeights.length > 0 ? totalWeight : "-";
+        threadWeights.length > 0 || climateWeight > 0 ? totalWeight : "-";
 
       if (threadWeights.length === 0) {
         document.getElementById("required-weight").textContent = "-";
@@ -151,14 +183,14 @@
         return;
       }
 
-      // Sort descending
+      // Sort threads by weight
       threadWeights.sort((a, b) => b - a);
 
       const count = threadWeights.length;
       let required = 0;
       let snags = 0;
 
-      // Apply new rules
+      // Required Weight rules
       if (count >= 1 && count <= 3) {
         required = 2 * threadWeights[0];
         snags = 1;
@@ -172,7 +204,7 @@
 
       document.getElementById("required-weight").textContent = required;
 
-      // Compare
+      // Outcome
       if (totalWeight >= required) {
         document.getElementById("outcome-value").textContent = "Surplus";
         document.getElementById("outcome-note").textContent = "Knot Range = 0";
@@ -183,9 +215,15 @@
       }
     }
 
-    function clearPair(index) {
-      document.getElementById(`x${index}`).value = "";
-      document.getElementById(`y${index}`).value = "";
+    function clearPair(i) {
+      document.getElementById(`x${i}`).value = "";
+      document.getElementById(`y${i}`).value = "";
+      updateResults();
+    }
+
+    function clearClimate() {
+      document.getElementById("climate-x").value = "";
+      document.getElementById("climate-y").value = "";
       updateResults();
     }
 
