@@ -59,11 +59,6 @@
       padding: 4px 8px;
       vertical-align: top;
     }
-    .rightcell {
-      font-style: italic;
-      color: #222;
-      white-space: pre-line;
-    }
   </style>
 </head>
 <body>
@@ -72,21 +67,21 @@
   <div id="results">
     <table>
       <tr>
-        <td>Total Weight:</td>
-        <td id="total-weight">-</td>
+        <td>Weave Tension:</td>
+        <td id="tension-value">-</td>
         <td></td>
       </tr>
 
       <tr>
-        <td>Required:</td>
-        <td id="required-weight">-</td>
-        <td id="required-note" class="rightcell"></td>
+        <td>Weave Weight:</td>
+        <td id="weight-value">-</td>
+        <td></td>
       </tr>
 
       <tr>
-        <td>Outcome:</td>
-        <td id="outcome-value">-</td>
-        <td id="outcome-note" class="rightcell"></td>
+        <td>Required Weight:</td>
+        <td id="required-weight">-</td>
+        <td id="required-note"></td>
       </tr>
     </table>
   </div>
@@ -100,20 +95,21 @@
     <button class="clear-button" onclick="clearClimate()">&times;</button>
   </div>
 
+  <!-- WEAVE HEADER -->
+  <div class="section-label">Weave</div>
+
   <!-- THREADS SECTION -->
   <div id="pairs"></div>
 
   <script>
     const pairContainer = document.getElementById('pairs');
-
-    // We allow up to 9 threads, but only show them progressively
     const MAX_THREADS = 9;
 
     function createThreadRow(i) {
       const div = document.createElement('div');
       div.className = 'pair';
       div.id = `row${i}`;
-      div.style.display = i === 0 ? "flex" : "none"; // only first visible
+      div.style.display = i === 0 ? "flex" : "none";
 
       div.innerHTML = `
         <input type="number" id="x${i}">
@@ -125,7 +121,6 @@
       pairContainer.appendChild(div);
     }
 
-    // Build all rows (hidden except first)
     for (let i = 0; i < MAX_THREADS; i++) {
       createThreadRow(i);
     }
@@ -145,74 +140,62 @@
     function updateResults() {
       revealNextRow();
 
-      let totalWeight = 0;
+      let fibres = 0;
+      let snags = 0;
       let threadWeights = [];
 
-      // Climate weight (added to total only)
+      // Climate
       const cx = parseFloat(document.getElementById("climate-x").value);
       const cy = parseFloat(document.getElementById("climate-y").value);
-      let climateWeight = 0;
-      if (!isNaN(cx)) climateWeight += cx;
-      if (!isNaN(cy)) climateWeight += cy;
+      if (!isNaN(cx)) fibres += cx;
+      if (!isNaN(cy)) snags += cy;
 
-      // Collect thread weights
+      // Threads
       for (let i = 0; i < MAX_THREADS; i++) {
         const x = parseFloat(document.getElementById(`x${i}`).value);
         const y = parseFloat(document.getElementById(`y${i}`).value);
 
-        let w = 0;
-        if (!isNaN(x)) w += x;
-        if (!isNaN(y)) w += y;
+        let f = 0, s = 0;
+        if (!isNaN(x)) f += x;
+        if (!isNaN(y)) s += y;
 
-        if (w > 0) {
-          threadWeights.push(w);
-          totalWeight += w;
+        if (f + s > 0) {
+          threadWeights.push(f + s);
+          fibres += f;
+          snags += s;
         }
       }
 
-      // Add climate to total
-      totalWeight += climateWeight;
+      const weaveTension = fibres - snags;
+      const weaveWeight = fibres + snags;
 
-      document.getElementById("total-weight").textContent =
-        threadWeights.length > 0 || climateWeight > 0 ? totalWeight : "-";
+      document.getElementById("tension-value").textContent =
+        fibres + snags > 0 ? weaveTension : "-";
+
+      document.getElementById("weight-value").textContent =
+        fibres + snags > 0 ? weaveWeight : "-";
 
       if (threadWeights.length === 0) {
         document.getElementById("required-weight").textContent = "-";
-        document.getElementById("outcome-value").textContent = "-";
-        document.getElementById("outcome-note").textContent = "";
+        document.getElementById("required-note").textContent = "";
         return;
       }
 
-      // Sort threads by weight
       threadWeights.sort((a, b) => b - a);
 
       const count = threadWeights.length;
       let required = 0;
-      let snags = 0;
 
-      // Required Weight rules
-      if (count >= 1 && count <= 3) {
+      if (count <= 3) {
         required = 2 * threadWeights[0];
-        snags = 1;
-      } else if (count >= 4 && count <= 6) {
+      } else if (count <= 6) {
         required = 2 * (threadWeights[0] + threadWeights[1]);
-        snags = 2;
-      } else if (count >= 7 && count <= 9) {
+      } else {
         required = 2 * (threadWeights[0] + threadWeights[1] + threadWeights[2]);
-        snags = 3;
       }
 
       document.getElementById("required-weight").textContent = required;
-
-      // Outcome
-      if (totalWeight >= required) {
-        document.getElementById("outcome-value").textContent = "Surplus";
-        document.getElementById("outcome-note").textContent = "Knot Range = 0";
-      } else {
-        document.getElementById("outcome-value").textContent = "Shortfall";
-        document.getElementById("outcome-note").textContent =
-          `Choose:\n• Knot Range = –1, 0, +1\n• Add Snags: ${snags}`;
-      }
+      document.getElementById("required-note").textContent = "";
     }
 
     function clearPair(i) {
