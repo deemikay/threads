@@ -60,7 +60,7 @@
       vertical-align: top;
     }
 
-    /* Required Weight colour states */
+    /* Gravity colour states */
     .req-red {
       color: #b30000;
       font-weight: bold;
@@ -74,7 +74,7 @@
       font-weight: bold;
     }
 
-    /* Surplus/Shortfall box */
+    /* Outcome box */
     #outcome-box {
       margin-top: 20px;
       margin-left: 1em;
@@ -82,7 +82,7 @@
       text-align: center;
     }
 
-    /* NEW: highlight heaviest threads */
+    /* Heaviest thread highlight */
     .heaviest {
       background: #e0e0e0;
     }
@@ -106,7 +106,7 @@
       </tr>
 
       <tr id="required-row">
-        <td>Required Weight:</td>
+        <td>Gravity of the Situation:</td>
         <td id="required-weight">-</td>
         <td id="required-note"></td>
       </tr>
@@ -243,32 +243,28 @@
       if (threadWeights.length >= 4 && threadWeights.length <= 6) highlightCount = 2;
       if (threadWeights.length >= 7) highlightCount = 3;
 
-      // Sort threadMap by weight DESC but preserve original index order for ties
+      // Sort by weight DESC, break ties by index ASC
       threadMap.sort((a, b) => b.weight - a.weight || a.index - b.index);
 
-      // Highlight the first N heaviest
+      // Highlight first N
       for (let i = 0; i < highlightCount && i < threadMap.length; i++) {
         const idx = threadMap[i].index;
         document.getElementById(`x${idx}`).classList.add("heaviest");
         document.getElementById(`y${idx}`).classList.add("heaviest");
       }
 
-      // Required Weight
+      // Gravity of the Situation
       threadWeights.sort((a, b) => b - a);
 
       const count = threadWeights.length;
       let required = 0;
-      let snagsNeeded = 0;
 
       if (count <= 3) {
         required = 2 * threadWeights[0];
-        snagsNeeded = 1;
       } else if (count <= 6) {
         required = 2 * (threadWeights[0] + threadWeights[1]);
-        snagsNeeded = 2;
       } else {
         required = 2 * (threadWeights[0] + threadWeights[1] + threadWeights[2]);
-        snagsNeeded = 3;
       }
 
       document.getElementById("required-weight").textContent = required;
@@ -290,9 +286,9 @@
       box.className = row.className;
 
       if (required > weaveWeight) {
-        box.textContent = `Knot: –1 to +1 OR +Snags: ${snagsNeeded}`;
+        box.textContent = `Knot Range: -1, 0, 1`;
       } else {
-        box.textContent = `Knot: 0`;
+        box.textContent = `Knot Range: 0`;
       }
     }
 
