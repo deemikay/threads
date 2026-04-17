@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Builder</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    font-size: 18px;
+    padding: 20px;
+    max-width: 700px;
+    margin: auto;
+  }
+  h2, h3 {
+    text-align: center;
+  }
+  .section {
+    margin-top: 30px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  .row {
+    margin-bottom: 12px;
+  }
+  label {
+    font-weight: bold;
+  }
+  select, input[type="text"] {
+    font-size: 16px;
+    padding: 4px;
+    width: 100%;
+  }
+  .output-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f7f7f7;
+    border-radius: 8px;
+  }
+  .small-note {
+    font-size: 14px;
+    color: #444;
+    white-space: pre-line;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>Character Builder</h2>
+
+<!-- THREAD 1: EXTRAORDINARY / ORDINARY -->
+<div class="section">
+  <h3>Thread 1: Extraordinary & Ordinary</h3>
+
+  <div class="row">
+    <label>Extraordinary Scope:</label>
+    <select id="scope">
+      <option value="">-- choose --</option>
+      <option value="broad">Broad (3 powers)</option>
+      <option value="focused">Focused (2 powers)</option>
+      <option value="singular">Singular (1 power)</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Powers (comma separated):</label>
+    <input type="text" id="powers" placeholder="e.g., Regeneration, Force Field">
+  </div>
+
+  <div class="row" id="focused-options" style="display:none;">
+    <label>Focused Bonus:</label>
+    <select id="focused-bonus">
+      <option value="">-- choose --</option>
+      <option value="reliable">Reliable (+1 Permanent Fibre)</option>
+      <option value="moment">Moment-Based (±1 die)</option>
+    </select>
+  </div>
+
+  <div class="row" id="singular-options" style="display:none;">
+    <label>Singular Bonus:</label>
+    <select id="singular-bonus">
+      <option value="">-- choose --</option>
+      <option value="overwhelming">Overwhelming (+2 Fibres, +1 Snag)</option>
+      <option value="controlled">Controlled (±1 or 2 dice)</option>
+    </select>
+  </div>
+</div>
+
+<!-- THREAD 2: DRIVE -->
+<div class="section">
+  <h3>Thread 2: Drive</h3>
+  <input type="text" id="drive" placeholder="Describe your Drive">
+</div>
+
+<!-- THREAD 3: SOURCE -->
+<div class="section">
+  <h3>Thread 3: Source</h3>
+  <input type="text" id="source" placeholder="Where do your powers come from?">
+</div>
+
+<!-- ORDINARY BACKGROUNDS -->
+<div class="section">
+  <h3>Ordinary Thread</h3>
+
+  <div class="row">
+    <label>Background Choice:</label>
+    <select id="background-choice">
+      <option value="">-- choose --</option>
+      <option value="single">Single Background (Singular → +2 Permanent Fibres)</option>
+      <option value="double">Two Backgrounds</option>
+    </select>
+  </div>
+
+  <div class="row" id="double-background-options" style="display:none;">
+    <label>Narrative Prompt:</label>
+    <select id="background-prompt">
+      <option value="">-- choose --</option>
+      <option value="currentformer">Current & Former (Current: +1 Fibre, Former: +1 Snag)</option>
+      <option value="sidehustle">Main & Side Hustle (Side Hustle allows ±1 die)</option>
+      <option value="balancing">Balancing Act (2 Fibres, 2 Snags)</option>
+    </select>
+  </div>
+</div>
+
+<!-- OUTPUT -->
+<div class="output-box">
+  <h3>Character Summary</h3>
+
+  <div><strong>Permanent Fibres:</strong> <span id="fibres">0</span></div>
+  <div><strong>Permanent Snags:</strong> <span id="snags">0</span></div>
+  <div><strong>Dice Modifiers:</strong> <span id="dice-mods">None</span></div>
+
+  <div class="small-note" id="special-rules">
+  </div>
+</div>
+
+<script>
+function update() {
+  let fibres = 0;
+  let snags = 0;
+  let diceMods = [];
+
+  const scope = document.getElementById("scope").value;
+  const focusedBox = document.getElementById("focused-options");
+  const singularBox = document.getElementById("singular-options");
+
+  focusedBox.style.display = scope === "focused" ? "block" : "none";
+  singularBox.style.display = scope === "singular" ? "block" : "none";
+
+  // Extraordinary Scope Effects
+  if (scope === "focused") {
+    const fb = document.getElementById("focused-bonus").value;
+    if (fb === "reliable") fibres += 1;
+    if (fb === "moment") diceMods.push("±1 die (Moment-Based)");
+  }
+
+  if (scope === "singular") {
+    const sb = document.getElementById("singular-bonus").value;
+    if (sb === "overwhelming") {
+      fibres += 2;
+      snags += 1;
+    }
+    if (sb === "controlled") diceMods.push("±1 or ±2 dice (Controlled)");
+  }
+
+  // Ordinary Backgrounds
+  const bg = document.getElementById("background-choice").value;
+  const bgBox = document.getElementById("double-background-options");
+  bgBox.style.display = bg === "double" ? "block" : "none";
+
+  if (bg === "single") {
+    fibres += 2;
+  }
+
+  if (bg === "double") {
+    const prompt = document.getElementById("background-prompt").value;
+    if (prompt === "currentformer") {
+      fibres += 1;
+      snags += 1;
+    }
+    if (prompt === "sidehustle") {
+      diceMods.push("±1 die (Side Hustle)");
+    }
+    if (prompt === "balancing") {
+      fibres += 2;
+      snags += 2;
+    }
+  }
+
+  // Output
+  document.getElementById("fibres").textContent = fibres;
+  document.getElementById("snags").textContent = snags;
+  document.getElementById("dice-mods").textContent =
+    diceMods.length ? diceMods.join(", ") : "None";
+
+  // Special Rules (display only)
+  document.getElementById("special-rules").textContent =
+`Special Rules:
+• Cool It Down: Only possible when Ordinary is active.
+• Snag Propagation: Snags gained in Extraordinary add 1 Snag to Ordinary.
+• Forced Flip: Full Snags in Extraordinary force a flip; clears 1 Snag.
+• Using Powers in Ordinary: Add 1 Snag to both sides.
+• Using Background in Extraordinary: Add 1 Snag to both sides.
+• Flip Lock: Cannot flip more than once per 3 Weaves.`;
+}
+
+document.addEventListener("input", update);
+</script>
+
+</body>
+</html>
